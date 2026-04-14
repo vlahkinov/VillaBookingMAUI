@@ -20,20 +20,27 @@ namespace VillaBookingMAUI
                 });
 
             // ─── HTTP Client за API комуникация ───
-            // ВАЖНО: Сменете URL-а с адреса на вашия API сървър
+            // ВАЖНО: Използваме HTTP (не HTTPS) за development с физическо устройство.
+            // Сменете IP адреса с вашия локален IP (ipconfig в cmd).
+            //
             // За Android емулатор: http://10.0.2.2:5152
-            // За iOS симулатор: http://localhost:5152
             // За физическо устройство: http://<вашият-IP>:5152
             builder.Services.AddHttpClient<IBookingApiService, BookingApiService>(client =>
             {
+                // *** СМЕНЕТЕ С ВАШИЯ IP АДРЕС ***
                 client.BaseAddress = new Uri("http://192.168.1.216:5152");
                 client.Timeout = TimeSpan.FromSeconds(30);
             })
             .ConfigurePrimaryHttpMessageHandler(() =>
             {
-                return new HttpClientHandler();
+                var handler = new HttpClientHandler();
+
+                // За development: приемаме всички сертификати (решава SSL грешките)
+                handler.ServerCertificateCustomValidationCallback =
+                    (message, cert, chain, errors) => true;
+
+                return handler;
             });
-           
 
             // ─── Услуги (Services) ───
             builder.Services.AddSingleton<IConnectivityService, ConnectivityService>();

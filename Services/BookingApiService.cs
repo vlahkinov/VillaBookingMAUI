@@ -19,6 +19,23 @@ namespace VillaBookingMAUI.Services
             };
         }
 
+        /// <summary>
+        /// Помощен метод: извлича Result от ApiResponse като суров JSON string.
+        /// System.Text.Json десериализира object? като JsonElement, затова
+        /// трябва да използваме GetRawText() вместо ToString().
+        /// </summary>
+        private string? ExtractResultJson(ApiResponse? apiResponse)
+        {
+            if (apiResponse?.IsSuccess != true || apiResponse.Result == null)
+                return null;
+
+            if (apiResponse.Result is JsonElement jsonElement)
+                return jsonElement.GetRawText();
+
+            // Fallback ако Result е вече десериализиран обект
+            return JsonSerializer.Serialize(apiResponse.Result, _jsonOptions);
+        }
+
         public async Task<List<Booking>> GetAllBookingsAsync()
         {
             try
@@ -27,19 +44,23 @@ namespace VillaBookingMAUI.Services
                 response.EnsureSuccessStatusCode();
 
                 var content = await response.Content.ReadAsStringAsync();
-                var apiResponse = JsonSerializer.Deserialize<ApiResponse>(content, _jsonOptions);
+                System.Diagnostics.Debug.WriteLine($"[API] GetAll response: {content}");
 
-                if (apiResponse?.IsSuccess == true && apiResponse.Result != null)
+                var apiResponse = JsonSerializer.Deserialize<ApiResponse>(content, _jsonOptions);
+                var resultJson = ExtractResultJson(apiResponse);
+
+                if (resultJson != null)
                 {
-                    var resultJson = apiResponse.Result.ToString()!;
-                    return JsonSerializer.Deserialize<List<Booking>>(resultJson, _jsonOptions) ?? new();
+                    var bookings = JsonSerializer.Deserialize<List<Booking>>(resultJson, _jsonOptions);
+                    System.Diagnostics.Debug.WriteLine($"[API] Deserialized {bookings?.Count ?? 0} bookings");
+                    return bookings ?? new();
                 }
 
                 return new();
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"GetAllBookingsAsync error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[API] GetAllBookingsAsync error: {ex.Message}");
                 return new();
             }
         }
@@ -54,11 +75,13 @@ namespace VillaBookingMAUI.Services
                     return null;
 
                 var content = await response.Content.ReadAsStringAsync();
-                var apiResponse = JsonSerializer.Deserialize<ApiResponse>(content, _jsonOptions);
+                System.Diagnostics.Debug.WriteLine($"[API] GetById response: {content}");
 
-                if (apiResponse?.IsSuccess == true && apiResponse.Result != null)
+                var apiResponse = JsonSerializer.Deserialize<ApiResponse>(content, _jsonOptions);
+                var resultJson = ExtractResultJson(apiResponse);
+
+                if (resultJson != null)
                 {
-                    var resultJson = apiResponse.Result.ToString()!;
                     return JsonSerializer.Deserialize<Booking>(resultJson, _jsonOptions);
                 }
 
@@ -66,7 +89,7 @@ namespace VillaBookingMAUI.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"GetBookingByIdAsync error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[API] GetBookingByIdAsync error: {ex.Message}");
                 return null;
             }
         }
@@ -76,10 +99,14 @@ namespace VillaBookingMAUI.Services
             try
             {
                 var json = JsonSerializer.Serialize(booking, _jsonOptions);
+                System.Diagnostics.Debug.WriteLine($"[API] Create request: {json}");
+
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                 var response = await _httpClient.PostAsync("api/bookings", content);
                 var responseContent = await response.Content.ReadAsStringAsync();
+                System.Diagnostics.Debug.WriteLine($"[API] Create response ({response.StatusCode}): {responseContent}");
+
                 var apiResponse = JsonSerializer.Deserialize<ApiResponse>(responseContent, _jsonOptions);
 
                 if (response.IsSuccessStatusCode && apiResponse?.IsSuccess == true)
@@ -90,6 +117,7 @@ namespace VillaBookingMAUI.Services
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"[API] CreateBookingAsync error: {ex.Message}");
                 return (false, $"Грешка при връзка със сървъра: {ex.Message}");
             }
         }
@@ -99,10 +127,14 @@ namespace VillaBookingMAUI.Services
             try
             {
                 var json = JsonSerializer.Serialize(booking, _jsonOptions);
+                System.Diagnostics.Debug.WriteLine($"[API] Update request: {json}");
+
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                 var response = await _httpClient.PutAsync($"api/bookings/{booking.Id}", content);
                 var responseContent = await response.Content.ReadAsStringAsync();
+                System.Diagnostics.Debug.WriteLine($"[API] Update response ({response.StatusCode}): {responseContent}");
+
                 var apiResponse = JsonSerializer.Deserialize<ApiResponse>(responseContent, _jsonOptions);
 
                 if (response.IsSuccessStatusCode && apiResponse?.IsSuccess == true)
@@ -113,6 +145,7 @@ namespace VillaBookingMAUI.Services
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"[API] UpdateBookingAsync error: {ex.Message}");
                 return (false, $"Грешка при връзка със сървъра: {ex.Message}");
             }
         }
@@ -123,6 +156,8 @@ namespace VillaBookingMAUI.Services
             {
                 var response = await _httpClient.DeleteAsync($"api/bookings/{id}");
                 var responseContent = await response.Content.ReadAsStringAsync();
+                System.Diagnostics.Debug.WriteLine($"[API] Delete response ({response.StatusCode}): {responseContent}");
+
                 var apiResponse = JsonSerializer.Deserialize<ApiResponse>(responseContent, _jsonOptions);
 
                 if (response.IsSuccessStatusCode && apiResponse?.IsSuccess == true)
@@ -133,6 +168,7 @@ namespace VillaBookingMAUI.Services
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"[API] DeleteBookingAsync error: {ex.Message}");
                 return (false, $"Грешка при връзка със сървъра: {ex.Message}");
             }
         }
@@ -149,11 +185,13 @@ namespace VillaBookingMAUI.Services
                 response.EnsureSuccessStatusCode();
 
                 var content = await response.Content.ReadAsStringAsync();
-                var apiResponse = JsonSerializer.Deserialize<ApiResponse>(content, _jsonOptions);
+                System.Diagnostics.Debug.WriteLine($"[API] GetByHouse response: {content}");
 
-                if (apiResponse?.IsSuccess == true && apiResponse.Result != null)
+                var apiResponse = JsonSerializer.Deserialize<ApiResponse>(content, _jsonOptions);
+                var resultJson = ExtractResultJson(apiResponse);
+
+                if (resultJson != null)
                 {
-                    var resultJson = apiResponse.Result.ToString()!;
                     return JsonSerializer.Deserialize<List<Booking>>(resultJson, _jsonOptions) ?? new();
                 }
 
@@ -161,7 +199,7 @@ namespace VillaBookingMAUI.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"GetBookingsByHouseAsync error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[API] GetBookingsByHouseAsync error: {ex.Message}");
                 return new();
             }
         }
@@ -175,19 +213,22 @@ namespace VillaBookingMAUI.Services
 
                 var response = await _httpClient.GetAsync(url);
                 var content = await response.Content.ReadAsStringAsync();
-                var apiResponse = JsonSerializer.Deserialize<ApiResponse>(content, _jsonOptions);
+                System.Diagnostics.Debug.WriteLine($"[API] Availability response: {content}");
 
-                if (apiResponse?.IsSuccess == true && apiResponse.Result != null)
+                var apiResponse = JsonSerializer.Deserialize<ApiResponse>(content, _jsonOptions);
+                var resultJson = ExtractResultJson(apiResponse);
+
+                if (resultJson != null)
                 {
-                    var resultJson = apiResponse.Result.ToString()!;
                     var availability = JsonSerializer.Deserialize<AvailabilityResult>(resultJson, _jsonOptions);
                     return availability?.IsAvailable ?? false;
                 }
 
                 return false;
             }
-            catch
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"[API] CheckAvailability error: {ex.Message}");
                 return false;
             }
         }
