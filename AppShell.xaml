@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:views="clr-namespace:VillaBookingMAUI.Views"
+       x:Class="VillaBookingMAUI.AppShell"
+       Title="Вила Резервации"
+       FlyoutBehavior="Disabled"
+       Shell.BackgroundColor="#0F3460"
+       Shell.ForegroundColor="#ECF0F1"
+       Shell.TitleColor="#ECF0F1"
+       Shell.UnselectedColor="#7F8C8D"
+       Shell.TabBarBackgroundColor="#16213E"
+       Shell.TabBarForegroundColor="#3498DB"
+       Shell.TabBarUnselectedColor="#566573">
+
+    <!-- Табове за основна навигация -->
+    <TabBar>
+        <ShellContent Title="Начало"
+                      Icon="home_icon.png"
+                      ContentTemplate="{DataTemplate views:HomePage}"
+                      Route="home" />
+
+        <ShellContent Title="Резервации"
+                      Icon="list_icon.png"
+                      ContentTemplate="{DataTemplate views:BookingsListPage}"
+                      Route="bookings" />
+
+        <ShellContent Title="Календар"
+                      Icon="calendar_icon.png"
+                      ContentTemplate="{DataTemplate views:CalendarPage}"
+                      Route="calendar" />
+    </TabBar>
+
+</Shell>

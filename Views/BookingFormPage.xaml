@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:VillaBookingMAUI.ViewModels"
+             x:Class="VillaBookingMAUI.Views.BookingFormPage"
+             x:DataType="vm:BookingFormViewModel"
+             Title="{Binding Title}"
+             BackgroundColor="#1A1A2E">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="14" Padding="20,16">
+
+            <!-- Зареждане при редактиране -->
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}"
+                               Color="#3498DB" />
+
+            <!-- Име на клиент -->
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Име на клиент"
+                       TextColor="#BDC3C7" FontSize="13" />
+                <Frame BackgroundColor="#16213E"
+                       CornerRadius="10"
+                       Padding="4,0"
+                       HasShadow="False">
+                    <Entry Text="{Binding ClientName}"
+                           Placeholder="Въведете име..."
+                           PlaceholderColor="#566573"
+                           TextColor="#ECF0F1"
+                           FontSize="16"
+                           BackgroundColor="Transparent" />
+                </Frame>
+            </VerticalStackLayout>
+
+            <!-- Брой гости -->
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Брой гости (1-4)"
+                       TextColor="#BDC3C7" FontSize="13" />
+                <Frame BackgroundColor="#16213E"
+                       CornerRadius="10"
+                       Padding="12,4"
+                       HasShadow="False">
+                    <Picker Title="Изберете брой гости"
+                            ItemsSource="{Binding GuestOptions}"
+                            SelectedItem="{Binding GuestsCount}"
+                            TextColor="#ECF0F1"
+                            TitleColor="#566573" />
+                </Frame>
+            </VerticalStackLayout>
+
+            <!-- Избор на къща -->
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Къща"
+                       TextColor="#BDC3C7" FontSize="13" />
+                <Frame BackgroundColor="#16213E"
+                       CornerRadius="10"
+                       Padding="12,4"
+                       HasShadow="False">
+                    <Picker Title="Изберете къща"
+                            ItemsSource="{Binding HouseOptions}"
+                            SelectedIndex="{Binding SelectedHouseIndex}"
+                            TextColor="#ECF0F1"
+                            TitleColor="#566573" />
+                </Frame>
+            </VerticalStackLayout>
+
+            <!-- Начална дата -->
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Начална дата"
+                       TextColor="#BDC3C7" FontSize="13" />
+                <Frame BackgroundColor="#16213E"
+                       CornerRadius="10"
+                       Padding="12,8"
+                       HasShadow="False">
+                    <DatePicker Date="{Binding StartDate}"
+                                MinimumDate="{Binding MinDate}"
+                                TextColor="#ECF0F1"
+                                BackgroundColor="Transparent"
+                                Format="dd MMMM yyyy" />
+                </Frame>
+            </VerticalStackLayout>
+
+            <!-- Крайна дата -->
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Крайна дата"
+                       TextColor="#BDC3C7" FontSize="13" />
+                <Frame BackgroundColor="#16213E"
+                       CornerRadius="10"
+                       Padding="12,8"
+                       HasShadow="False">
+                    <DatePicker Date="{Binding EndDate}"
+                                MinimumDate="{Binding MinDate}"
+                                TextColor="#ECF0F1"
+                                BackgroundColor="Transparent"
+                                Format="dd MMMM yyyy" />
+                </Frame>
+            </VerticalStackLayout>
+
+            <!-- Наличност индикатор -->
+            <Frame BackgroundColor="{Binding IsAvailable, Converter={StaticResource BoolToColorConverter}}"
+                   CornerRadius="8"
+                   Padding="10"
+                   HasShadow="False"
+                   IsVisible="{Binding AvailabilityMessage, Converter={StaticResource StringToBoolConverter}}">
+                <Label Text="{Binding AvailabilityMessage}"
+                       TextColor="White"
+                       FontSize="13"
+                       HorizontalTextAlignment="Center" />
+            </Frame>
+
+            <!-- Депозит -->
+            <Frame BackgroundColor="#16213E"
+                   CornerRadius="10"
+                   Padding="14,10"
+                   HasShadow="False">
+                <HorizontalStackLayout Spacing="12">
+                    <Switch IsToggled="{Binding IsDepositPaid}"
+                            OnColor="#2ECC71"
+                            ThumbColor="#ECF0F1" />
+                    <Label Text="Депозитът е платен"
+                           TextColor="#ECF0F1"
+                           FontSize="15"
+                           VerticalTextAlignment="Center" />
+                </HorizontalStackLayout>
+            </Frame>
+
+            <!-- Създадена от -->
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Създадена от"
+                       TextColor="#BDC3C7" FontSize="13" />
+                <Frame BackgroundColor="#16213E"
+                       CornerRadius="10"
+                       Padding="4,0"
+                       HasShadow="False">
+                    <Entry Text="{Binding CreatedBy}"
+                           Placeholder="Име на потребител..."
+                           PlaceholderColor="#566573"
+                           TextColor="#ECF0F1"
+                           FontSize="16"
+                           BackgroundColor="Transparent" />
+                </Frame>
+            </VerticalStackLayout>
+
+            <!-- Бутони -->
+            <Button Text="{Binding SaveButtonText}"
+                    Command="{Binding SaveBookingCommand}"
+                    BackgroundColor="#3498DB"
+                    TextColor="White"
+                    FontAttributes="Bold"
+                    FontSize="16"
+                    CornerRadius="12"
+                    HeightRequest="52"
+                    IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"
+                    Margin="0,8,0,0" />
+
+            <Button Text="Отказ"
+                    Command="{Binding CancelCommand}"
+                    BackgroundColor="Transparent"
+                    TextColor="#7F8C8D"
+                    FontSize="15"
+                    HeightRequest="44"
+                    Margin="0,0,0,20" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:VillaBookingMAUI.Converters"
+             x:Class="VillaBookingMAUI.App">
+
+    <Application.Resources>
+        <ResourceDictionary>
+
+            <!-- Цветове -->
+            <Color x:Key="PrimaryDark">#1A1A2E</Color>
+            <Color x:Key="SecondaryDark">#16213E</Color>
+            <Color x:Key="AccentBlue">#3498DB</Color>
+            <Color x:Key="AccentGreen">#2ECC71</Color>
+            <Color x:Key="AccentRed">#E74C3C</Color>
+            <Color x:Key="AccentOrange">#F39C12</Color>
+            <Color x:Key="TextPrimary">#ECF0F1</Color>
+            <Color x:Key="TextSecondary">#BDC3C7</Color>
+            <Color x:Key="TextMuted">#7F8C8D</Color>
+            <Color x:Key="NavBackground">#0F3460</Color>
+
+            <!-- Конвертори -->
+            <converters:BoolToColorConverter x:Key="BoolToColorConverter"
+                                             TrueColor="#2ECC71"
+                                             FalseColor="#E74C3C" />
+
+            <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
+
+            <converters:HouseIdToNameConverter x:Key="HouseIdToNameConverter" />
+
+            <!-- Конвертор за наличност (зелен/червен) -->
+            <converters:BoolToColorConverter x:Key="AvailabilityColorConverter"
+                                             TrueColor="#2ECC71"
+                                             FalseColor="#E74C3C" />
+
+            <!-- Конвертор за цвят на къща в списъка -->
+            <converters:HouseIdToColorConverter x:Key="HouseIdToColorConverter" />
+
+            <!-- StringToBool – показва елемент само ако стрингът не е празен -->
+            <converters:StringToBoolConverter x:Key="StringToBoolConverter" />
+
+            <!-- Глобални стилове -->
+            <Style TargetType="Page" ApplyToDerivedTypes="True">
+                <Setter Property="BackgroundColor" Value="{StaticResource PrimaryDark}" />
+            </Style>
+
+            <Style TargetType="NavigationPage">
+                <Setter Property="BarBackgroundColor" Value="{StaticResource NavBackground}" />
+                <Setter Property="BarTextColor" Value="{StaticResource TextPrimary}" />
+            </Style>
+
+        </ResourceDictionary>
+    </Application.Resources>
+
+</Application>

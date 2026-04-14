@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:VillaBookingMAUI.ViewModels"
+             x:Class="VillaBookingMAUI.Views.CalendarPage"
+             x:DataType="vm:CalendarViewModel"
+             Title="{Binding Title}"
+             BackgroundColor="#1A1A2E">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" Padding="16,12">
+
+        <!-- Филтър по къща -->
+        <Frame Grid.Row="0"
+               BackgroundColor="#16213E"
+               CornerRadius="10"
+               Padding="12,4"
+               HasShadow="False"
+               Margin="0,0,0,8">
+            <Picker Title="Изберете къща"
+                    ItemsSource="{Binding HouseFilterOptions}"
+                    SelectedIndex="{Binding SelectedHouseFilter}"
+                    TextColor="#ECF0F1"
+                    TitleColor="#566573" />
+        </Frame>
+
+        <!-- Навигация месец -->
+        <Grid Grid.Row="1"
+              ColumnDefinitions="Auto,*,Auto"
+              Margin="0,4,0,12">
+            <Button Grid.Column="0"
+                    Text="◀"
+                    Command="{Binding PreviousMonthCommand}"
+                    BackgroundColor="#16213E"
+                    TextColor="#3498DB"
+                    FontSize="20"
+                    WidthRequest="48"
+                    HeightRequest="48"
+                    CornerRadius="24" />
+            <VerticalStackLayout Grid.Column="1"
+                                 VerticalOptions="Center"
+                                 HorizontalOptions="Center">
+                <Label Text="{Binding MonthYearDisplay}"
+                       FontSize="20"
+                       FontAttributes="Bold"
+                       TextColor="#ECF0F1"
+                       HorizontalTextAlignment="Center" />
+                <Label Text="Натиснете ден за детайли"
+                       FontSize="11"
+                       TextColor="#566573"
+                       HorizontalTextAlignment="Center" />
+            </VerticalStackLayout>
+            <Button Grid.Column="2"
+                    Text="▶"
+                    Command="{Binding NextMonthCommand}"
+                    BackgroundColor="#16213E"
+                    TextColor="#3498DB"
+                    FontSize="20"
+                    WidthRequest="48"
+                    HeightRequest="48"
+                    CornerRadius="24" />
+        </Grid>
+
+        <!-- Хедър дни от седмицата -->
+        <Grid Grid.Row="2"
+              ColumnDefinitions="*,*,*,*,*,*,*"
+              Margin="0,0,0,4">
+            <Label Grid.Column="0" Text="Пон" TextColor="#7F8C8D" FontSize="12" HorizontalTextAlignment="Center" />
+            <Label Grid.Column="1" Text="Вто" TextColor="#7F8C8D" FontSize="12" HorizontalTextAlignment="Center" />
+            <Label Grid.Column="2" Text="Сря" TextColor="#7F8C8D" FontSize="12" HorizontalTextAlignment="Center" />
+            <Label Grid.Column="3" Text="Чет" TextColor="#7F8C8D" FontSize="12" HorizontalTextAlignment="Center" />
+            <Label Grid.Column="4" Text="Пет" TextColor="#7F8C8D" FontSize="12" HorizontalTextAlignment="Center" />
+            <Label Grid.Column="5" Text="Съб" TextColor="#F39C12" FontSize="12" HorizontalTextAlignment="Center" />
+            <Label Grid.Column="6" Text="Нед" TextColor="#E74C3C" FontSize="12" HorizontalTextAlignment="Center" />
+        </Grid>
+
+        <!-- Календарна решетка -->
+        <CollectionView Grid.Row="3"
+                         ItemsSource="{Binding CalendarDays}"
+                         SelectionMode="None"
+                         VerticalOptions="Start">
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout Orientation="Vertical"
+                                 Span="7"
+                                 HorizontalItemSpacing="3"
+                                 VerticalItemSpacing="3" />
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:CalendarDay">
+                    <Frame BackgroundColor="{Binding BackgroundColor}"
+                           CornerRadius="8"
+                           Padding="0"
+                           HeightRequest="46"
+                           HasShadow="False">
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:CalendarViewModel}}, Path=DayTappedCommand}"
+                                CommandParameter="{Binding .}" />
+                        </Frame.GestureRecognizers>
+                        <Label Text="{Binding DayNumber}"
+                               TextColor="{Binding TextColor}"
+                               FontSize="15"
+                               FontAttributes="Bold"
+                               HorizontalTextAlignment="Center"
+                               VerticalTextAlignment="Center" />
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Легенда и списък с резервации за месеца -->
+        <VerticalStackLayout Grid.Row="4" Spacing="8" Margin="0,8,0,0">
+
+            <!-- Легенда -->
+            <HorizontalStackLayout Spacing="16" HorizontalOptions="Center">
+                <HorizontalStackLayout Spacing="4">
+                    <BoxView WidthRequest="12" HeightRequest="12" CornerRadius="3" Color="#E74C3C" />
+                    <Label Text="Заето" TextColor="#BDC3C7" FontSize="12" VerticalTextAlignment="Center" />
+                </HorizontalStackLayout>
+                <HorizontalStackLayout Spacing="4">
+                    <BoxView WidthRequest="12" HeightRequest="12" CornerRadius="3" Color="#3498DB" />
+                    <Label Text="Днес" TextColor="#BDC3C7" FontSize="12" VerticalTextAlignment="Center" />
+                </HorizontalStackLayout>
+                <HorizontalStackLayout Spacing="4">
+                    <BoxView WidthRequest="12" HeightRequest="12" CornerRadius="3" Color="#2C3E50" />
+                    <Label Text="Свободно" TextColor="#BDC3C7" FontSize="12" VerticalTextAlignment="Center" />
+                </HorizontalStackLayout>
+            </HorizontalStackLayout>
+
+            <!-- Бутон днес -->
+            <Button Text="Днес"
+                    Command="{Binding GoToTodayCommand}"
+                    BackgroundColor="#16213E"
+                    TextColor="#3498DB"
+                    FontSize="13"
+                    CornerRadius="8"
+                    HeightRequest="36"
+                    Margin="0,0,0,8" />
+        </VerticalStackLayout>
+
+    </Grid>
+
+</ContentPage>

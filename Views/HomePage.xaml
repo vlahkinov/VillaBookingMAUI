@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:VillaBookingMAUI.ViewModels"
+             xmlns:models="clr-namespace:VillaBookingMAUI.Models"
+             x:Class="VillaBookingMAUI.Views.HomePage"
+             x:DataType="vm:HomeViewModel"
+             Title="{Binding Title}"
+             BackgroundColor="#1A1A2E">
+
+    <Shell.TitleColor>
+        <Color>#ECF0F1</Color>
+    </Shell.TitleColor>
+
+    <RefreshView IsRefreshing="{Binding IsBusy}"
+                 Command="{Binding LoadDataCommand}"
+                 RefreshColor="#3498DB">
+        <ScrollView>
+            <VerticalStackLayout Spacing="16" Padding="20">
+
+                <!-- Поздрав -->
+                <Label Text="{Binding Greeting}"
+                       FontSize="28"
+                       FontAttributes="Bold"
+                       TextColor="#ECF0F1" />
+
+                <Label Text="Управление на вили резервации"
+                       FontSize="14"
+                       TextColor="#7F8C8D"
+                       Margin="0,-8,0,0" />
+
+                <!-- Офлайн банер -->
+                <Frame IsVisible="{Binding IsOffline}"
+                       BackgroundColor="#E74C3C"
+                       CornerRadius="8"
+                       Padding="12"
+                       HasShadow="False">
+                    <Label Text="Няма интернет връзка"
+                           TextColor="White"
+                           FontAttributes="Bold"
+                           HorizontalTextAlignment="Center" />
+                </Frame>
+
+                <!-- Статистики -->
+                <Label Text="Обобщение"
+                       FontSize="18"
+                       FontAttributes="Bold"
+                       TextColor="#BDC3C7"
+                       Margin="0,8,0,0" />
+
+                <Grid ColumnDefinitions="*,*"
+                      RowDefinitions="Auto,Auto"
+                      ColumnSpacing="12"
+                      RowSpacing="12">
+
+                    <!-- Общо резервации -->
+                    <Frame Grid.Row="0" Grid.Column="0"
+                           BackgroundColor="#16213E"
+                           CornerRadius="12"
+                           Padding="16"
+                           HasShadow="False">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="{Binding TotalBookings}"
+                                   FontSize="32"
+                                   FontAttributes="Bold"
+                                   TextColor="#3498DB" />
+                            <Label Text="Общо резервации"
+                                   FontSize="12"
+                                   TextColor="#7F8C8D" />
+                        </VerticalStackLayout>
+                    </Frame>
+
+                    <!-- Неплатени депозити -->
+                    <Frame Grid.Row="0" Grid.Column="1"
+                           BackgroundColor="#16213E"
+                           CornerRadius="12"
+                           Padding="16"
+                           HasShadow="False">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="{Binding UnpaidDeposits}"
+                                   FontSize="32"
+                                   FontAttributes="Bold"
+                                   TextColor="#E74C3C" />
+                            <Label Text="Неплатени депозити"
+                                   FontSize="12"
+                                   TextColor="#7F8C8D" />
+                        </VerticalStackLayout>
+                    </Frame>
+
+                    <!-- Къща 1 -->
+                    <Frame Grid.Row="1" Grid.Column="0"
+                           BackgroundColor="#16213E"
+                           CornerRadius="12"
+                           Padding="16"
+                           HasShadow="False">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="{Binding House1Bookings}"
+                                   FontSize="32"
+                                   FontAttributes="Bold"
+                                   TextColor="#2ECC71" />
+                            <Label Text="Къща 1 – Планинска"
+                                   FontSize="12"
+                                   TextColor="#7F8C8D" />
+                        </VerticalStackLayout>
+                    </Frame>
+
+                    <!-- Къща 2 -->
+                    <Frame Grid.Row="1" Grid.Column="1"
+                           BackgroundColor="#16213E"
+                           CornerRadius="12"
+                           Padding="16"
+                           HasShadow="False">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="{Binding House2Bookings}"
+                                   FontSize="32"
+                                   FontAttributes="Bold"
+                                   TextColor="#F39C12" />
+                            <Label Text="Къща 2 – Езерна"
+                                   FontSize="12"
+                                   TextColor="#7F8C8D" />
+                        </VerticalStackLayout>
+                    </Frame>
+                </Grid>
+
+                <!-- Бутон нова резервация -->
+                <Button Text="+ Нова резервация"
+                        Command="{Binding NavigateToNewBookingCommand}"
+                        BackgroundColor="#3498DB"
+                        TextColor="White"
+                        FontAttributes="Bold"
+                        FontSize="16"
+                        CornerRadius="12"
+                        HeightRequest="52"
+                        Margin="0,8,0,0" />
+
+                <!-- Предстоящи резервации -->
+                <Label Text="Предстоящи резервации"
+                       FontSize="18"
+                       FontAttributes="Bold"
+                       TextColor="#BDC3C7"
+                       Margin="0,8,0,0" />
+
+                <CollectionView ItemsSource="{Binding UpcomingBookings}"
+                                SelectionMode="Single"
+                                SelectionChangedCommand="{Binding NavigateToBookingDetailCommand}"
+                                SelectionChangedCommandParameter="{Binding Source={RelativeSource Self}, Path=SelectedItem}">
+                    <CollectionView.EmptyView>
+                        <Label Text="Няма предстоящи резервации."
+                               TextColor="#7F8C8D"
+                               HorizontalTextAlignment="Center"
+                               Margin="0,20,0,0" />
+                    </CollectionView.EmptyView>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:Booking">
+                            <Frame BackgroundColor="#16213E"
+                                   CornerRadius="10"
+                                   Padding="14"
+                                   Margin="0,4"
+                                   HasShadow="False">
+                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
+                                    <Label Grid.Row="0" Grid.Column="0"
+                                           Text="{Binding ClientName}"
+                                           FontSize="16"
+                                           FontAttributes="Bold"
+                                           TextColor="#ECF0F1" />
+                                    <Label Grid.Row="0" Grid.Column="1"
+                                           Text="{Binding DepositStatus}"
+                                           TextColor="{Binding DepositColor}"
+                                           FontSize="12"
+                                           VerticalTextAlignment="Center" />
+                                    <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                                           Text="{Binding HouseDisplayName}"
+                                           FontSize="13"
+                                           TextColor="#7F8C8D" />
+                                    <Label Grid.Row="2" Grid.Column="0"
+                                           Text="{Binding DateRange}"
+                                           FontSize="13"
+                                           TextColor="#3498DB" />
+                                    <Label Grid.Row="2" Grid.Column="1"
+                                           Text="{Binding GuestsDisplay}"
+                                           FontSize="13"
+                                           TextColor="#BDC3C7" />
+                                </Grid>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <!-- Линк към всички -->
+                <Label Text="Виж всички резервации →"
+                       TextColor="#3498DB"
+                       FontSize="14"
+                       HorizontalTextAlignment="Center"
+                       Margin="0,4,0,20">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding NavigateToAllBookingsCommand}" />
+                    </Label.GestureRecognizers>
+                </Label>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </RefreshView>
+
+</ContentPage>

@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:VillaBookingMAUI.ViewModels"
+             xmlns:models="clr-namespace:VillaBookingMAUI.Models"
+             x:Class="VillaBookingMAUI.Views.BookingsListPage"
+             x:DataType="vm:BookingsListViewModel"
+             Title="{Binding Title}"
+             BackgroundColor="#1A1A2E">
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
+
+        <!-- Търсене -->
+        <Frame Grid.Row="0"
+               BackgroundColor="#16213E"
+               CornerRadius="10"
+               Padding="4,0"
+               Margin="16,12,16,4"
+               HasShadow="False">
+            <SearchBar Placeholder="Търси по име на клиент..."
+                       Text="{Binding SearchText}"
+                       PlaceholderColor="#7F8C8D"
+                       TextColor="#ECF0F1"
+                       CancelButtonColor="#3498DB"
+                       BackgroundColor="Transparent" />
+        </Frame>
+
+        <!-- Филтър по къща -->
+        <Frame Grid.Row="1"
+               BackgroundColor="#16213E"
+               CornerRadius="10"
+               Padding="12,8"
+               Margin="16,4"
+               HasShadow="False">
+            <Picker Title="Филтър по къща"
+                    ItemsSource="{Binding FilterOptions}"
+                    SelectedIndex="{Binding SelectedFilterIndex}"
+                    TextColor="#ECF0F1"
+                    TitleColor="#7F8C8D" />
+        </Frame>
+
+        <!-- Списък с резервации -->
+        <RefreshView Grid.Row="2"
+                     IsRefreshing="{Binding IsBusy}"
+                     Command="{Binding LoadBookingsCommand}"
+                     RefreshColor="#3498DB">
+            <CollectionView ItemsSource="{Binding Bookings}"
+                            SelectionMode="None"
+                            Margin="16,4">
+
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout VerticalOptions="Center"
+                                         HorizontalOptions="Center"
+                                         Spacing="8"
+                                         Padding="20">
+                        <Label Text="Няма намерени резервации"
+                               FontSize="18"
+                               TextColor="#7F8C8D"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="Дръпнете надолу за обновяване или създайте нова резервация"
+                               FontSize="13"
+                               TextColor="#566573"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:Booking">
+                        <SwipeView>
+                            <!-- Плъзгане наляво за изтриване -->
+                            <SwipeView.RightItems>
+                                <SwipeItems>
+                                    <SwipeItem Text="Изтрий"
+                                               BackgroundColor="#E74C3C"
+                                               Command="{Binding Source={RelativeSource AncestorType={x:Type vm:BookingsListViewModel}}, Path=DeleteBookingCommand}"
+                                               CommandParameter="{Binding .}" />
+                                </SwipeItems>
+                            </SwipeView.RightItems>
+
+                            <Frame BackgroundColor="#16213E"
+                                   CornerRadius="10"
+                                   Padding="14"
+                                   Margin="0,4"
+                                   HasShadow="False">
+                                <Frame.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:BookingsListViewModel}}, Path=NavigateToDetailCommand}"
+                                        CommandParameter="{Binding .}" />
+                                </Frame.GestureRecognizers>
+
+                                <Grid ColumnDefinitions="Auto,*,Auto"
+                                      RowDefinitions="Auto,Auto,Auto"
+                                      ColumnSpacing="12"
+                                      RowSpacing="2">
+
+                                    <!-- Цветна лента за къща -->
+                                    <BoxView Grid.RowSpan="3"
+                                             WidthRequest="4"
+                                             CornerRadius="2"
+                                             Color="{Binding HouseId, Converter={StaticResource HouseIdToColorConverter}}" />
+
+                                    <!-- Име и депозит -->
+                                    <Label Grid.Row="0" Grid.Column="1"
+                                           Text="{Binding ClientName}"
+                                           FontSize="16"
+                                           FontAttributes="Bold"
+                                           TextColor="#ECF0F1" />
+
+                                    <Frame Grid.Row="0" Grid.Column="2"
+                                           BackgroundColor="{Binding IsDepositPaid, Converter={StaticResource BoolToColorConverter}}"
+                                           CornerRadius="6"
+                                           Padding="8,2"
+                                           HasShadow="False">
+                                        <Label Text="{Binding DepositStatus}"
+                                               TextColor="White"
+                                               FontSize="11" />
+                                    </Frame>
+
+                                    <!-- Къща -->
+                                    <Label Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"
+                                           Text="{Binding HouseDisplayName}"
+                                           FontSize="13"
+                                           TextColor="#7F8C8D" />
+
+                                    <!-- Период и гости -->
+                                    <HorizontalStackLayout Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2"
+                                                           Spacing="12">
+                                        <Label Text="{Binding DateRange}"
+                                               FontSize="13"
+                                               TextColor="#3498DB" />
+                                        <Label Text="{Binding GuestsDisplay}"
+                                               FontSize="13"
+                                               TextColor="#BDC3C7" />
+                                        <Label Text="{Binding Nights, StringFormat='{0} нощувки'}"
+                                               FontSize="13"
+                                               TextColor="#566573" />
+                                    </HorizontalStackLayout>
+                                </Grid>
+                            </Frame>
+                        </SwipeView>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+
+        <!-- Плаващ бутон -->
+        <Button Grid.Row="3"
+                Text="+ Нова резервация"
+                Command="{Binding NavigateToNewBookingCommand}"
+                BackgroundColor="#3498DB"
+                TextColor="White"
+                FontAttributes="Bold"
+                FontSize="16"
+                CornerRadius="12"
+                HeightRequest="52"
+                Margin="16,8,16,16" />
+    </Grid>
+
+</ContentPage>
