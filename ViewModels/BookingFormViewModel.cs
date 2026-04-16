@@ -53,8 +53,8 @@ namespace VillaBookingMAUI.ViewModels
 
         public List<string> HouseOptions { get; } = new()
         {
-            "Къща 1 – Планинска",
-            "Къща 2 – Езерна"
+            "Къща 1 ",
+            "Къща 2 "
         };
 
         public List<int> GuestOptions { get; } = new() { 1, 2, 3, 4 };
@@ -143,13 +143,17 @@ namespace VillaBookingMAUI.ViewModels
             try
             {
                 int houseId = SelectedHouseIndex + 1;
-                bool available = await _apiService.CheckAvailabilityAsync(houseId, StartDate, EndDate);
+                var (available, error) = await _apiService.CheckAvailabilityAsync(
+                    houseId,
+                    StartDate,
+                    EndDate,
+                    IsEditMode ? BookingId : null);
 
                 // При редактиране – ако е същата къща и период, е налична
-                if (IsEditMode)
+                if (!string.IsNullOrWhiteSpace(error))
                 {
-                    IsAvailable = true;
-                    AvailabilityMessage = string.Empty;
+                    IsAvailable = false;
+                    AvailabilityMessage = error;
                     return;
                 }
 
@@ -161,8 +165,8 @@ namespace VillaBookingMAUI.ViewModels
             catch
             {
                 // Не блокираме формата при грешка в проверката
-                IsAvailable = true;
-                AvailabilityMessage = string.Empty;
+                IsAvailable = false;
+                AvailabilityMessage = "Неуспешна проверка на наличността. Опитайте отново.";
             }
         }
 
@@ -253,6 +257,11 @@ namespace VillaBookingMAUI.ViewModels
 
             if (string.IsNullOrWhiteSpace(CreatedBy))
                 return "Въведете кой създава резервацията.";
+
+            if (!IsAvailable)
+                return string.IsNullOrWhiteSpace(AvailabilityMessage)
+                    ? "Избраният период не е наличен."
+                    : AvailabilityMessage;
 
             return null;
         }

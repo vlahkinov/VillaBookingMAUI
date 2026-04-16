@@ -25,8 +25,8 @@ namespace VillaBookingMAUI.ViewModels
         public List<string> FilterOptions { get; } = new()
         {
             "Всички къщи",
-            "Къща 1 – Планинска",
-            "Къща 2 – Езерна"
+            "Къща 1 ",
+            "Къща 2 "
         };
 
         public BookingsListViewModel(IBookingApiService apiService)

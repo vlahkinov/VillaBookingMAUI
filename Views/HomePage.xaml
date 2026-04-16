@@ -98,7 +98,7 @@
                                    FontSize="32"
                                    FontAttributes="Bold"
                                    TextColor="#2ECC71" />
-                            <Label Text="Къща 1 – Планинска"
+                            <Label Text="Къща 1 "
                                    FontSize="12"
                                    TextColor="#7F8C8D" />
                         </VerticalStackLayout>
@@ -115,7 +115,7 @@
                                    FontSize="32"
                                    FontAttributes="Bold"
                                    TextColor="#F39C12" />
-                            <Label Text="Къща 2 – Езерна"
+                            <Label Text="Къща 2 "
                                    FontSize="12"
                                    TextColor="#7F8C8D" />
                         </VerticalStackLayout>

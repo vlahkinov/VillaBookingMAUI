@@ -47,7 +47,7 @@ namespace VillaBookingMAUI.Converters
         public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is int id)
-                return id == 1 ? "Къща 1 – Планинска" : "Къща 2 – Езерна";
+                return id == 1 ? "Къща 1" : "Къща 2";
             return "Неизвестна";
         }
 

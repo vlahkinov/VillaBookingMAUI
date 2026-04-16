@@ -10,6 +10,10 @@ namespace VillaBookingMAUI.Services
         Task<(bool Success, string? Error)> UpdateBookingAsync(Booking booking);
         Task<(bool Success, string? Error)> DeleteBookingAsync(int id);
         Task<List<Booking>> GetBookingsByHouseAsync(int houseId, int? month = null, int? year = null);
-        Task<bool> CheckAvailabilityAsync(int houseId, DateTime startDate, DateTime endDate);
+        Task<(bool IsAvailable, string? Error)> CheckAvailabilityAsync(
+            int houseId,
+            DateTime startDate,
+            DateTime endDate,
+            int? excludeBookingId = null);
     }
 }

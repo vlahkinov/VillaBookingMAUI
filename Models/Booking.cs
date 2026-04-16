@@ -29,7 +29,7 @@ namespace VillaBookingMAUI.Models
         public string CreatedBy { get; set; } = string.Empty;
 
         // Computed properties for UI display
-        public string HouseDisplayName => HouseId == 1 ? "Къща 1 – Планинска" : "Къща 2 – Езерна";
+        public string HouseDisplayName => HouseId == 1 ? "Къща 1 " : "Къща 2 ";
         public string DateRange => $"{StartDate:dd MMM yyyy} – {EndDate:dd MMM yyyy}";
         public int Nights => (EndDate - StartDate).Days;
         public string GuestsDisplay => GuestsCount == 1 ? "1 гост" : $"{GuestsCount} гости";

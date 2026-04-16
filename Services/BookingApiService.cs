@@ -19,6 +19,18 @@ namespace VillaBookingMAUI.Services
             };
         }
 
+        private static string BuildRequestError(HttpResponseMessage response, ApiResponse? apiResponse, string fallbackMessage)
+        {
+            var apiError = apiResponse?.Errors?.FirstOrDefault();
+            return apiError ?? $"{fallbackMessage} (HTTP {(int)response.StatusCode})";
+        }
+
+        private async Task<ApiResponse?> ReadApiResponseAsync(HttpResponseMessage response)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<ApiResponse>(content, _jsonOptions);
+        }
+
         /// <summary>
         /// Помощен метод: извлича Result от ApiResponse като суров JSON string.
         /// System.Text.Json десериализира object? като JsonElement, затова
@@ -38,31 +50,19 @@ namespace VillaBookingMAUI.Services
 
         public async Task<List<Booking>> GetAllBookingsAsync()
         {
-            try
-            {
-                var response = await _httpClient.GetAsync("api/bookings");
-                response.EnsureSuccessStatusCode();
+            var response = await _httpClient.GetAsync("api/bookings");
+            var apiResponse = await ReadApiResponseAsync(response);
 
-                var content = await response.Content.ReadAsStringAsync();
-                System.Diagnostics.Debug.WriteLine($"[API] GetAll response: {content}");
+            if (!response.IsSuccessStatusCode || apiResponse?.IsSuccess != true)
+                throw new HttpRequestException(BuildRequestError(response, apiResponse, "Failed to load bookings."));
 
-                var apiResponse = JsonSerializer.Deserialize<ApiResponse>(content, _jsonOptions);
-                var resultJson = ExtractResultJson(apiResponse);
-
-                if (resultJson != null)
-                {
-                    var bookings = JsonSerializer.Deserialize<List<Booking>>(resultJson, _jsonOptions);
-                    System.Diagnostics.Debug.WriteLine($"[API] Deserialized {bookings?.Count ?? 0} bookings");
-                    return bookings ?? new();
-                }
-
+            var resultJson = ExtractResultJson(apiResponse);
+            if (resultJson == null)
                 return new();
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[API] GetAllBookingsAsync error: {ex.Message}");
-                return new();
-            }
+
+            var bookings = JsonSerializer.Deserialize<List<Booking>>(resultJson, _jsonOptions);
+            System.Diagnostics.Debug.WriteLine($"[API] Deserialized {bookings?.Count ?? 0} bookings");
+            return bookings ?? new();
         }
 
         public async Task<Booking?> GetBookingByIdAsync(int id)
@@ -74,10 +74,7 @@ namespace VillaBookingMAUI.Services
                 if (!response.IsSuccessStatusCode)
                     return null;
 
-                var content = await response.Content.ReadAsStringAsync();
-                System.Diagnostics.Debug.WriteLine($"[API] GetById response: {content}");
-
-                var apiResponse = JsonSerializer.Deserialize<ApiResponse>(content, _jsonOptions);
+                var apiResponse = await ReadApiResponseAsync(response);
                 var resultJson = ExtractResultJson(apiResponse);
 
                 if (resultJson != null)
@@ -104,10 +101,7 @@ namespace VillaBookingMAUI.Services
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                 var response = await _httpClient.PostAsync("api/bookings", content);
-                var responseContent = await response.Content.ReadAsStringAsync();
-                System.Diagnostics.Debug.WriteLine($"[API] Create response ({response.StatusCode}): {responseContent}");
-
-                var apiResponse = JsonSerializer.Deserialize<ApiResponse>(responseContent, _jsonOptions);
+                var apiResponse = await ReadApiResponseAsync(response);
 
                 if (response.IsSuccessStatusCode && apiResponse?.IsSuccess == true)
                     return (true, null);
@@ -132,10 +126,7 @@ namespace VillaBookingMAUI.Services
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                 var response = await _httpClient.PutAsync($"api/bookings/{booking.Id}", content);
-                var responseContent = await response.Content.ReadAsStringAsync();
-                System.Diagnostics.Debug.WriteLine($"[API] Update response ({response.StatusCode}): {responseContent}");
-
-                var apiResponse = JsonSerializer.Deserialize<ApiResponse>(responseContent, _jsonOptions);
+                var apiResponse = await ReadApiResponseAsync(response);
 
                 if (response.IsSuccessStatusCode && apiResponse?.IsSuccess == true)
                     return (true, null);
@@ -155,10 +146,7 @@ namespace VillaBookingMAUI.Services
             try
             {
                 var response = await _httpClient.DeleteAsync($"api/bookings/{id}");
-                var responseContent = await response.Content.ReadAsStringAsync();
-                System.Diagnostics.Debug.WriteLine($"[API] Delete response ({response.StatusCode}): {responseContent}");
-
-                var apiResponse = JsonSerializer.Deserialize<ApiResponse>(responseContent, _jsonOptions);
+                var apiResponse = await ReadApiResponseAsync(response);
 
                 if (response.IsSuccessStatusCode && apiResponse?.IsSuccess == true)
                     return (true, null);
@@ -175,61 +163,58 @@ namespace VillaBookingMAUI.Services
 
         public async Task<List<Booking>> GetBookingsByHouseAsync(int houseId, int? month = null, int? year = null)
         {
-            try
+            var url = $"api/houses/{houseId}/bookings";
+            if (month.HasValue && year.HasValue)
+                url += $"?month={month}&year={year}";
+
+            var response = await _httpClient.GetAsync(url);
+            var apiResponse = await ReadApiResponseAsync(response);
+
+            if (!response.IsSuccessStatusCode || apiResponse?.IsSuccess != true)
+                throw new HttpRequestException(BuildRequestError(response, apiResponse, "Failed to load house bookings."));
+
+            var resultJson = ExtractResultJson(apiResponse);
+            if (resultJson != null)
             {
-                var url = $"api/houses/{houseId}/bookings";
-                if (month.HasValue && year.HasValue)
-                    url += $"?month={month}&year={year}";
-
-                var response = await _httpClient.GetAsync(url);
-                response.EnsureSuccessStatusCode();
-
-                var content = await response.Content.ReadAsStringAsync();
-                System.Diagnostics.Debug.WriteLine($"[API] GetByHouse response: {content}");
-
-                var apiResponse = JsonSerializer.Deserialize<ApiResponse>(content, _jsonOptions);
-                var resultJson = ExtractResultJson(apiResponse);
-
-                if (resultJson != null)
-                {
-                    return JsonSerializer.Deserialize<List<Booking>>(resultJson, _jsonOptions) ?? new();
-                }
-
-                return new();
+                return JsonSerializer.Deserialize<List<Booking>>(resultJson, _jsonOptions) ?? new();
             }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[API] GetBookingsByHouseAsync error: {ex.Message}");
-                return new();
-            }
+
+            return new();
         }
 
-        public async Task<bool> CheckAvailabilityAsync(int houseId, DateTime startDate, DateTime endDate)
+        public async Task<(bool IsAvailable, string? Error)> CheckAvailabilityAsync(
+            int houseId,
+            DateTime startDate,
+            DateTime endDate,
+            int? excludeBookingId = null)
         {
             try
             {
                 var url = $"api/houses/{houseId}/availability" +
                           $"?startDate={startDate:yyyy-MM-dd}&endDate={endDate:yyyy-MM-dd}";
+                if (excludeBookingId.HasValue)
+                    url += $"&excludeBookingId={excludeBookingId.Value}";
 
                 var response = await _httpClient.GetAsync(url);
-                var content = await response.Content.ReadAsStringAsync();
-                System.Diagnostics.Debug.WriteLine($"[API] Availability response: {content}");
+                var apiResponse = await ReadApiResponseAsync(response);
 
-                var apiResponse = JsonSerializer.Deserialize<ApiResponse>(content, _jsonOptions);
+                if (!response.IsSuccessStatusCode || apiResponse?.IsSuccess != true)
+                    return (false, BuildRequestError(response, apiResponse, "Failed to check availability."));
+
                 var resultJson = ExtractResultJson(apiResponse);
 
                 if (resultJson != null)
                 {
                     var availability = JsonSerializer.Deserialize<AvailabilityResult>(resultJson, _jsonOptions);
-                    return availability?.IsAvailable ?? false;
+                    return (availability?.IsAvailable ?? false, null);
                 }
 
-                return false;
+                return (false, "The server returned an empty availability response.");
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[API] CheckAvailability error: {ex.Message}");
-                return false;
+                return (false, $"Грешка при връзка със сървъра: {ex.Message}");
             }
         }
     }

@@ -7,9 +7,12 @@ namespace VillaBookingMAUI
 {
     public static class MauiProgram
     {
+        private const string ApiBaseUrlEnvironmentVariable = "VILLA_BOOKING_API_BASE_URL";
+
         public static MauiApp CreateMauiApp()
         {
             var builder = MauiApp.CreateBuilder();
+            var apiBaseUrl = ResolveApiBaseUrl();
             builder
                 .UseMauiApp<App>()
                 .UseMauiCommunityToolkit()
@@ -28,7 +31,7 @@ namespace VillaBookingMAUI
             builder.Services.AddHttpClient<IBookingApiService, BookingApiService>(client =>
             {
                 // *** СМЕНЕТЕ С ВАШИЯ IP АДРЕС ***
-                client.BaseAddress = new Uri("http://192.168.1.216:5152");
+                client.BaseAddress = new Uri(apiBaseUrl);
                 client.Timeout = TimeSpan.FromSeconds(30);
             })
             .ConfigurePrimaryHttpMessageHandler(() =>
@@ -60,6 +63,17 @@ namespace VillaBookingMAUI
             builder.Services.AddTransient<CalendarPage>();
 
             return builder.Build();
+        }
+
+        private static string ResolveApiBaseUrl()
+        {
+            var configuredValue = Environment.GetEnvironmentVariable(ApiBaseUrlEnvironmentVariable);
+            if (!string.IsNullOrWhiteSpace(configuredValue))
+                return configuredValue;
+
+            return DeviceInfo.Platform == DevicePlatform.Android
+                ? "http://10.0.2.2:5152"
+                : "http://localhost:5152";
         }
     }
 }
