@@ -9,6 +9,7 @@ namespace VillaBookingMAUI.ViewModels
     public partial class BookingDetailViewModel : BaseViewModel
     {
         private readonly IBookingApiService _apiService;
+        private readonly IReminderService _reminderService;
 
         [ObservableProperty]
         private int _bookingId;
@@ -19,9 +20,10 @@ namespace VillaBookingMAUI.ViewModels
         [ObservableProperty]
         private bool _isLoaded;
 
-        public BookingDetailViewModel(IBookingApiService apiService)
+        public BookingDetailViewModel(IBookingApiService apiService, IReminderService reminderService)
         {
             _apiService = apiService;
+            _reminderService = reminderService;
             Title = "Детайли";
         }
 
@@ -124,6 +126,11 @@ namespace VillaBookingMAUI.ViewModels
                            $"Гости: {Booking.GuestsDisplay}\n" +
                            $"Депозит: {Booking.DepositStatus}";
 
+                if (Booking.HasPhone)
+                    text += $"\nТелефон: {Booking.ClientPhone}";
+                if (Booking.HasEmail)
+                    text += $"\nИмейл: {Booking.ClientEmail}";
+
                 await Share.Default.RequestAsync(new ShareTextRequest
                 {
                     Text = text,
@@ -137,14 +144,42 @@ namespace VillaBookingMAUI.ViewModels
         }
 
         /// <summary>
-        /// Обаждане до клиента (демонстрира Phone Dialer API).
+        /// Изпращане на напомняне чрез SMS или Email.
+        /// Показва ActionSheet с налични опции (SMS/Email).
+        /// Демонстрира Sms API и Email API на телефона.
+        /// </summary>
+        [RelayCommand]
+        private async Task SendReminder()
+        {
+            if (Booking == null) return;
+
+            await _reminderService.ShowReminderOptionsAsync(Booking);
+        }
+
+        /// <summary>
+        /// Обаждане до клиента чрез Phone Dialer API.
+        /// Демонстрира PhoneDialer хардуерна възможност.
         /// </summary>
         [RelayCommand]
         private async Task CallClient()
         {
-            // В реално приложение номерът ще идва от модела
-            await ShowAlertAsync("Информация",
-                "В пълната версия тук ще се извика Phone Dialer за обаждане до клиента.");
+            if (Booking == null || !Booking.HasPhone) return;
+
+            try
+            {
+                if (PhoneDialer.Default.IsSupported)
+                {
+                    PhoneDialer.Default.Open(Booking.ClientPhone!);
+                }
+                else
+                {
+                    await ShowAlertAsync("Грешка", "Телефонни обаждания не се поддържат на това устройство.");
+                }
+            }
+            catch (Exception ex)
+            {
+                await ShowAlertAsync("Грешка", $"Не може да се осъществи обаждане: {ex.Message}");
+            }
         }
     }
 }

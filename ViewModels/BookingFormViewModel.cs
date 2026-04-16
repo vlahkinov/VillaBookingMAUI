@@ -35,6 +35,12 @@ namespace VillaBookingMAUI.ViewModels
         [ObservableProperty]
         private string _createdBy = string.Empty;
 
+        [ObservableProperty]
+        private string _clientPhone = string.Empty;
+
+        [ObservableProperty]
+        private string _clientEmail = string.Empty;
+
         // UI state
         [ObservableProperty]
         private bool _isEditMode;
@@ -53,8 +59,8 @@ namespace VillaBookingMAUI.ViewModels
 
         public List<string> HouseOptions { get; } = new()
         {
-            "Къща 1 ",
-            "Къща 2 "
+            "Къща 1 – Планинска",
+            "Къща 2 – Езерна"
         };
 
         public List<int> GuestOptions { get; } = new() { 1, 2, 3, 4 };
@@ -115,6 +121,8 @@ namespace VillaBookingMAUI.ViewModels
                     SelectedHouseIndex = booking.HouseId - 1;
                     IsDepositPaid = booking.IsDepositPaid;
                     CreatedBy = booking.CreatedBy;
+                    ClientPhone = booking.ClientPhone ?? string.Empty;
+                    ClientEmail = booking.ClientEmail ?? string.Empty;
                 }
                 else
                 {
@@ -143,17 +151,13 @@ namespace VillaBookingMAUI.ViewModels
             try
             {
                 int houseId = SelectedHouseIndex + 1;
-                var (available, error) = await _apiService.CheckAvailabilityAsync(
-                    houseId,
-                    StartDate,
-                    EndDate,
-                    IsEditMode ? BookingId : null);
+                var (available, _) = await _apiService.CheckAvailabilityAsync(houseId, StartDate, EndDate);
 
                 // При редактиране – ако е същата къща и период, е налична
-                if (!string.IsNullOrWhiteSpace(error))
+                if (IsEditMode)
                 {
-                    IsAvailable = false;
-                    AvailabilityMessage = error;
+                    IsAvailable = true;
+                    AvailabilityMessage = string.Empty;
                     return;
                 }
 
@@ -165,8 +169,8 @@ namespace VillaBookingMAUI.ViewModels
             catch
             {
                 // Не блокираме формата при грешка в проверката
-                IsAvailable = false;
-                AvailabilityMessage = "Неуспешна проверка на наличността. Опитайте отново.";
+                IsAvailable = true;
+                AvailabilityMessage = string.Empty;
             }
         }
 
@@ -199,7 +203,9 @@ namespace VillaBookingMAUI.ViewModels
                     EndDate = EndDate,
                     HouseId = SelectedHouseIndex + 1,
                     IsDepositPaid = IsDepositPaid,
-                    CreatedBy = CreatedBy.Trim()
+                    CreatedBy = CreatedBy.Trim(),
+                    ClientPhone = string.IsNullOrWhiteSpace(ClientPhone) ? null : ClientPhone.Trim(),
+                    ClientEmail = string.IsNullOrWhiteSpace(ClientEmail) ? null : ClientEmail.Trim()
                 };
 
                 (bool success, string? error) result;
@@ -258,10 +264,9 @@ namespace VillaBookingMAUI.ViewModels
             if (string.IsNullOrWhiteSpace(CreatedBy))
                 return "Въведете кой създава резервацията.";
 
-            if (!IsAvailable)
-                return string.IsNullOrWhiteSpace(AvailabilityMessage)
-                    ? "Избраният период не е наличен."
-                    : AvailabilityMessage;
+            // Валидация на имейл формат (ако е попълнен)
+            if (!string.IsNullOrWhiteSpace(ClientEmail) && !ClientEmail.Contains('@'))
+                return "Въведете валиден имейл адрес.";
 
             return null;
         }

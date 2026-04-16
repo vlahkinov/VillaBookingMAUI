@@ -10,6 +10,7 @@ namespace VillaBookingMAUI.ViewModels
     {
         private readonly IBookingApiService _apiService;
         private readonly IConnectivityService _connectivity;
+        private readonly INotificationService _notificationService;
 
         public ObservableCollection<Booking> UpcomingBookings { get; } = new();
 
@@ -31,10 +32,14 @@ namespace VillaBookingMAUI.ViewModels
         [ObservableProperty]
         private string _greeting = string.Empty;
 
-        public HomeViewModel(IBookingApiService apiService, IConnectivityService connectivity)
+        public HomeViewModel(
+            IBookingApiService apiService,
+            IConnectivityService connectivity,
+            INotificationService notificationService)
         {
             _apiService = apiService;
             _connectivity = connectivity;
+            _notificationService = notificationService;
             Title = "Начало";
 
             _connectivity.ConnectivityChanged += (_, connected) =>
@@ -94,6 +99,9 @@ namespace VillaBookingMAUI.ViewModels
                 {
                     UpcomingBookings.Add(booking);
                 }
+
+                // Проверка за предстоящи пристигания и показване на напомняния
+                await _notificationService.ScheduleArrivalRemindersAsync(allBookings);
             }
             catch (Exception ex)
             {

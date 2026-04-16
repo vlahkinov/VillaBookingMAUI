@@ -28,12 +28,21 @@ namespace VillaBookingMAUI.Models
         [JsonPropertyName("createdBy")]
         public string CreatedBy { get; set; } = string.Empty;
 
+        [JsonPropertyName("clientPhone")]
+        public string? ClientPhone { get; set; }
+
+        [JsonPropertyName("clientEmail")]
+        public string? ClientEmail { get; set; }
+
         // Computed properties for UI display
-        public string HouseDisplayName => HouseId == 1 ? "Къща 1 " : "Къща 2 ";
+        public string HouseDisplayName => HouseId == 1 ? "Къща 1 – Планинска" : "Къща 2 – Езерна";
         public string DateRange => $"{StartDate:dd MMM yyyy} – {EndDate:dd MMM yyyy}";
         public int Nights => (EndDate - StartDate).Days;
         public string GuestsDisplay => GuestsCount == 1 ? "1 гост" : $"{GuestsCount} гости";
         public string DepositStatus => IsDepositPaid ? "Платен" : "Неплатен";
         public Color DepositColor => IsDepositPaid ? Color.FromArgb("#2ECC71") : Color.FromArgb("#E74C3C");
+        public bool HasPhone => !string.IsNullOrWhiteSpace(ClientPhone);
+        public bool HasEmail => !string.IsNullOrWhiteSpace(ClientEmail);
+        public bool HasContact => HasPhone || HasEmail;
     }
 }
